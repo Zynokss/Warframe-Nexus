@@ -1,37 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Warframe Nexus // World State Tracker
 
-## Getting Started
+> **Your ultimate companion through the depths of the Origin System.**
 
-First, run the development server:
+Warframe Nexus is a real-time telemetry dashboard for Warframe players. Built with Next.js, TypeScript, and Tailwind CSS, it provides up-to-the-second tracking of open-world cycles, void fissures, active invasions, weekly resets, vendor stock, and endgame operations with a customizable sci-fi interface.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Real-Time WorldState Telemetry:** Automated background synchronization using TanStack Query (15s refetch interval).
+- **Void Fissures & Railjack Void Storms:** Side-by-side active mission streams complete with difficulty tier tags (Lith, Meso, Neo, Axi, Requiem, Omnia) and faction emblem badges.
+- **Weekly Progression & Checklist:** Interactive reset tracker for Duviri Spirals, Teshin / Palladino honor vendors, Netracells, Kahl missions, Clem, Maroo, and 1999 calendar tasks with automatic UTC reset logic.
+- **Open World & Environmental Cycles:** Live day/night and mood cycles for Cetus, Orb Vallis, Cambion Drift, Earth, and Zariman.
+- **Fleet Construction Progress:** Active defense progress bars for the Grineer Fomorian Fleet and Corpus Razorback Armada.
+- **Tactical & Endgame Operations:** Live telemetry for Sorties, Archon Hunts, Deep Archimedea, Nightwave acts, and Conclave challenges.
+- **Customizable & Collapsible Layout:**
+  - Toggle specific cards on or off via the **Customize** menu.
+  - Expand or collapse individual dashboard sections.
+  - Layout preferences saved automatically in `localStorage`.
+- **Alert Notification System:** Optional browser audio & notification alerts for active events.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **State & Data Fetching:** TanStack Query (React Query v5)
+- **Icons:** Lucide React
+- **Asset Integration:** Community SVG assets from Warframe Community Developers (WFCD)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
+Acknowledgments & Credits
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    Game data provided by Digital Extremes via the official Warframe WorldState API.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Warframe-Nexus
+    SVG assets and community icons provided by the Warframe Community Developers (WFCD).
