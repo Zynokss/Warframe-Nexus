@@ -1,11 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { ShieldAlert, RefreshCw, SlidersHorizontal, Check, EyeOff, ChevronUp, ChevronDown } from 'lucide-react'
-import { WorldState } from '@/types/warframe'
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ShieldAlert, RefreshCw, SlidersHorizontal, Check, EyeOff, ChevronUp, ChevronDown } from 'lucide-react';
+import { readStoredBooleanMap, writeStoredJson } from '@/lib/browser-storage';
+import { normalizeArchimedeas } from '@/lib/archimedea';
+import { WorldState } from '@/types/warframe';
 
 import Navbar from '@/components/Navbar'
+import OrokinHero from '@/components/OrokinHero'
 import EnvironmentsCard from '@/components/EnvironmentsCard'
 import FissuresCard from '@/components/FissuresCard'
 import InvasionsCard from '@/components/InvasionsCard'
@@ -21,9 +24,14 @@ import NewsCard from '@/components/NewsCard'
 import ConclaveCard from '@/components/ConclaveCard'
 import NightwaveCard from '@/components/NightwaveCard'
 
-async function fetchWorldState(): Promise<WorldState> {
-  const res = await fetch('/api/worldstate')
-  if (!res.ok) throw new Error('Failed to load telemetry')
+async function fetchWorldState({ signal }: { signal: AbortSignal }): Promise<WorldState> {
+  const res = await fetch('/api/worldstate', {
+    signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]),
+  })
+  if (!res.ok) {
+    const details = await res.json().catch(() => null)
+    throw new Error(details?.error || `Telemetry request failed (HTTP ${res.status})`)
+  }
   return res.json()
 }
 
@@ -49,10 +57,38 @@ const MAIN_CARDS = [
 export default function Home() {
   const [mounted, setMounted] = useState(false)
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false)
-  
+  const customizeDialog = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isCustomizeOpen) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const dialog = customizeDialog.current
+    dialog?.querySelector<HTMLButtonElement>('button')?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsCustomizeOpen(false)
+      if (event.key !== 'Tab' || !dialog) return
+      const buttons = dialog.querySelectorAll<HTMLButtonElement>('button')
+      const first = buttons[0]
+      const last = buttons[buttons.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus()
+    }
+  }, [isCustomizeOpen])
+
   // Image fallback states
-  const [logoFailed, setLogoFailed] = useState(false)
-  const [bgFailed, setBgFailed] = useState(false)
 
   const [visibleCards, setVisibleCards] = useState<Record<string, boolean>>(() =>
     [...SIDEBAR_CARDS, ...MAIN_CARDS].reduce((acc, card) => ({ ...acc, [card.id]: true }), {})
@@ -61,32 +97,28 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true)
-    const savedVisibility = localStorage.getItem('warframe_hub_visible_cards')
-    const savedCollapses = localStorage.getItem('warframe_hub_collapsed_cards')
-
-    if (savedVisibility) {
-      try { setVisibleCards(JSON.parse(savedVisibility)) } catch (e) { console.error(e) }
-    }
-    if (savedCollapses) {
-      try { setCollapsedCards(JSON.parse(savedCollapses)) } catch (e) { console.error(e) }
-    }
+    const savedVisibility = readStoredBooleanMap('warframe_hub_visible_cards')
+    const savedCollapses = readStoredBooleanMap('warframe_hub_collapsed_cards')
+    if (savedVisibility) setVisibleCards(savedVisibility)
+    if (savedCollapses) setCollapsedCards(savedCollapses)
   }, [])
 
   const toggleCardVisibility = (id: string) => {
     const updated = { ...visibleCards, [id]: !visibleCards[id] }
     setVisibleCards(updated)
-    localStorage.setItem('warframe_hub_visible_cards', JSON.stringify(updated))
+    writeStoredJson('warframe_hub_visible_cards', updated)
   }
 
   const toggleCardCollapse = (id: string) => {
     const updated = { ...collapsedCards, [id]: !collapsedCards[id] }
     setCollapsedCards(updated)
-    localStorage.setItem('warframe_hub_collapsed_cards', JSON.stringify(updated))
+    writeStoredJson('warframe_hub_collapsed_cards', updated)
   }
 
   const { data, error, isLoading, refetch, isFetching } = useQuery<WorldState>({
     queryKey: ['worldstate'],
     queryFn: fetchWorldState,
+    retry: false,
     refetchInterval: 15000,
   })
 
@@ -95,9 +127,10 @@ export default function Home() {
   const renderCollapsibleSection = (id: string, title: string, component: React.ReactNode) => {
     const isCollapsed = collapsedCards[id]
     return (
-      <div className="space-y-2">
+      <div id={`module-${id}`} className="nexus-module space-y-2">
         <div className="flex items-center justify-between px-1">
           <button
+            aria-expanded={!isCollapsed}
             onClick={() => toggleCardCollapse(id)}
             className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400 hover:text-white transition uppercase tracking-widest cursor-pointer group/title"
           >
@@ -114,85 +147,27 @@ export default function Home() {
     )
   }
 
-  // Fallback background style if local image fails
-  const bannerBgStyle = !bgFailed
-    ? { backgroundImage: `linear-gradient(to right, rgba(9, 13, 22, 0.95), rgba(9, 13, 22, 0.75)), url('/images/nexus-banner-bg.png')` }
-    : { background: '#090d16' }
-
   return (
-    <div className="min-h-screen bg-[#06080d] text-zinc-200 relative overflow-x-hidden font-sans selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="nexus-page min-h-screen bg-[#06080d] text-zinc-200 relative overflow-x-hidden font-sans selection:bg-amber-500/30 selection:text-amber-200">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0c101d] via-[#07090e] to-[#040507] opacity-90 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(1px_1px_at_20px_30px,#ffffff30,rgba(0,0,0,0)),radial-gradient(1.5px_1.5px_at_120px_160px,#ffffff40,rgba(0,0,0,0))] opacity-40 pointer-events-none" />
 
       <Navbar />
 
-      <main className="p-4 md:p-6 space-y-6 relative z-10 max-w-[1920px] mx-auto">
-        {/* Hero Banner Header with Local Assets & Fallbacks */}
-        <header
-          className="relative overflow-hidden border border-[#1b2234] bg-cover bg-center p-6 md:px-8 rounded-2xl shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6"
-          style={bannerBgStyle}
-        >
-          {/* Hidden image element to detect background load failures */}
-          <img
-            src="/images/nexus-banner-bg.png"
-            alt=""
-            className="hidden"
-            onError={() => setBgFailed(true)}
-          />
+      <main className="nexus-dashboard p-4 md:p-6 space-y-6 relative z-10 max-w-[1920px] mx-auto">
+        <OrokinHero
+          onCustomize={() => setIsCustomizeOpen(true)}
+          onSync={() => refetch()}
+          isFetching={mounted && isFetching}
+          status={!mounted || isLoading ? 'connecting' : error ? 'offline' : 'connected'}
+          fissureCount={data?.fissures?.filter(f => !f.isStorm).length}
+          invasionCount={data?.invasions?.length}
+        />
 
-          {/* Left Side: Local Logo with Fallback Icon */}
-          <div className="flex items-center gap-4 shrink-0">
-            {!logoFailed ? (
-              <img
-                src="/images/warframe-logo.png"
-                alt="Warframe Logo"
-                className="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-[0_0_12px_rgba(59,130,246,0.6)] shrink-0 filter brightness-110"
-                onError={() => setLogoFailed(true)}
-              />
-            ) : (
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-blue-950/60 border border-blue-700/60 flex items-center justify-center text-blue-400 font-bold">
-                WF
-              </div>
-            )}
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase drop-shadow">
-                WARFRAME
-              </h1>
-              <h1 className="text-xl md:text-2xl font-black tracking-widest uppercase bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 bg-clip-text text-transparent drop-shadow">
-                NEXUS
-              </h1>
-            </div>
-          </div>
-
-          {/* Middle Tagline */}
-          <div className="max-w-md text-center lg:text-left">
-            <p className="text-sm md:text-base text-zinc-100 font-bold tracking-wide leading-relaxed drop-shadow">
-              Your ultimate companion through the depths of the Origin System.
-            </p>
-          </div>
-
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              onClick={() => setIsCustomizeOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#121622] border border-[#232d42] hover:border-amber-500/50 rounded-xl text-xs text-amber-400 hover:text-amber-300 transition shadow-md cursor-pointer font-mono font-bold"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>CUSTOMIZE</span>
-            </button>
-
-            <button
-              onClick={() => refetch()}
-              disabled={mounted ? isFetching : false}
-              suppressHydrationWarning
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#121622] border border-[#232636] hover:border-amber-500/50 rounded-xl text-xs text-zinc-300 hover:text-white transition shadow-md disabled:opacity-50 cursor-pointer font-mono font-bold"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${mounted && isFetching ? 'animate-spin text-amber-400' : 'text-zinc-400'}`} />
-              <span>{mounted && isFetching ? 'SYNCING...' : 'SYNC DATA'}</span>
-            </button>
-          </div>
-        </header>
-
+        <div className="nexus-section-heading">
+          <div><span className="nexus-eyebrow">02 / LIVE INTELLIGENCE</span><h2>Origin System <span>overview</span></h2></div>
+          <span className="nexus-section-note">PC · ENGLISH · 15 SECOND SYNC</span>
+        </div>
         {/* Dashboard Grid Content */}
         {!mounted || isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[450px] space-y-4 text-zinc-500 bg-[#0b0e17]/50 rounded-2xl border border-[#1b1e2b]">
@@ -202,10 +177,11 @@ export default function Home() {
             </div>
             <p className="text-xs uppercase tracking-widest text-zinc-400 font-mono font-bold">Establishing Link to Warframe API...</p>
           </div>
-        ) : error ? (
+        ) : error && !data ? (
           <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-xl text-red-400 text-xs flex items-center gap-3 backdrop-blur shadow-xl font-mono">
             <ShieldAlert className="w-5 h-5 shrink-0 text-red-500" />
-            <span>Telemetry stream interrupted. Re-establishing link... Try syncing again.</span>
+            <div className="flex-1"><p>Live telemetry is unavailable.</p><p className="mt-1 text-red-300">{error.message}</p></div>
+            <button type="button" onClick={() => refetch()} disabled={isFetching} className="border border-red-800 px-3 py-2 shrink-0 disabled:opacity-50 cursor-pointer">{isFetching ? 'Retrying…' : 'Try again'}</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -225,7 +201,7 @@ export default function Home() {
                   <EndgameCard
                     sortie={data?.sortie}
                     archonHunt={data?.archonHunt}
-                    deepArchimedea={worldStateAny?.deepArchimedea}
+                    archimedeas={normalizeArchimedeas(data?.archimedeas, data?.deepArchimedea)}
                   />
                 ))}
               {visibleCards['weeklyReset'] !== false &&
@@ -309,7 +285,7 @@ export default function Home() {
 
       {/* Customize Modal */}
       {isCustomizeOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div ref={customizeDialog} role="dialog" aria-modal="true" aria-label="Configure dashboard modules" className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0b0e17] border border-amber-900/40 rounded-2xl p-5 max-w-md w-full space-y-4 shadow-2xl font-mono">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
@@ -340,6 +316,8 @@ export default function Home() {
                   >
                     <span className="truncate">{card.label}</span>
                     <button
+                      aria-label={`Toggle ${card.label}`}
+                      aria-pressed={isVisible}
                       onClick={() => toggleCardVisibility(card.id)}
                       className={`w-6 h-6 rounded-lg flex items-center justify-center border transition shrink-0 cursor-pointer ${
                         isVisible

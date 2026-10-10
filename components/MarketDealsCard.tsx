@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { ShoppingCart, Flame, Clock, Coins, Eye, Sparkles } from 'lucide-react'
-import { FlashSale } from '@/types/warframe'
+import MarketManifest from '@/components/MarketManifest'
+import CardEmblem from '@/components/CardEmblem'
+import { useState } from 'react';
+import { Eye, Sparkles } from 'lucide-react';
+import { FlashSale } from '@/types/warframe';
 
 type FlashSaleItem = FlashSale & {
   id?: string
@@ -85,8 +87,8 @@ export default function MarketDealsCard({ flashSales = [] }: MarketDealsCardProp
   })
 
   return (
-    <div className="bg-[#0b0c12] border border-[#232636] hover:border-cyan-500/50 rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between">
-      
+    <div data-card="market" className="nexus-panel bg-[#0b0c12] border border-[#232636] hover:border-cyan-500/50 rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between">
+
       {/* Background Nebula & Starfield (Cyan Platinum Glow) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[350px] bg-cyan-500/15 blur-[100px] rounded-full transition-all duration-700 opacity-80" />
@@ -94,9 +96,9 @@ export default function MarketDealsCard({ flashSales = [] }: MarketDealsCardProp
       </div>
 
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
+      <div className="nexus-card-header flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
         <div className="flex items-center gap-2">
-          <ShoppingCart className="w-4 h-4 text-cyan-400 animate-pulse" />
+          <CardEmblem kind="market" />
           <h2 className="text-xs font-black text-cyan-400 uppercase tracking-widest">
             Market Flash Sales
           </h2>
@@ -105,6 +107,7 @@ export default function MarketDealsCard({ flashSales = [] }: MarketDealsCardProp
         <div className="flex items-center gap-2">
           {/* Show Credit Items Toggle */}
           <button
+            aria-pressed={showCredits}
             onClick={() => setShowCredits(!showCredits)}
             className={`flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-xl border font-mono font-bold transition cursor-pointer ${
               showCredits
@@ -125,73 +128,13 @@ export default function MarketDealsCard({ flashSales = [] }: MarketDealsCardProp
 
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent my-1" />
 
-      {/* Items List */}
-      <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 custom-scrollbar relative z-10 my-1">
-        {filteredSales.length === 0 ? (
-          <p className="text-xs text-zinc-400 py-6 text-center font-medium">
-            {showCredits ? 'No active Market Flash Sales.' : 'No active Platinum Flash Sales.'}
-          </p>
-        ) : (
-          filteredSales.map((sale, idx) => {
-            const discountPercent = sale.discount || 0
-            const isPopular = sale.isPopular || discountPercent >= 50
-            const { amount, isCredit } = getDealPricing(sale)
-
-            return (
-              <div
-                key={sale.id || `sale-${idx}`}
-                className="bg-[#12131c]/80 backdrop-blur-md p-3 rounded-xl border border-[#232636] hover:border-zinc-500 transition flex items-center justify-between gap-3 group/row shadow-sm relative overflow-hidden"
-              >
-                {/* Left Side: Item Details & Pricing */}
-                <div className="min-w-0 space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-zinc-100 uppercase tracking-wide truncate group-hover/row:text-cyan-300 transition">
-                      {sale.item}
-                    </span>
-                    {isPopular && (
-                      <span className="text-[9px] font-mono font-extrabold text-amber-300 bg-amber-950/80 px-1.5 py-0.2 rounded border border-amber-700/60 shrink-0 flex items-center gap-0.5">
-                        <Flame className="w-2.5 h-2.5 text-amber-400" />
-                        HOT
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 text-[11px] font-mono">
-                    {isCredit ? (
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
-                        <Coins className="w-3.5 h-3.5 text-emerald-400" />
-                        {amount.toLocaleString()} CREDITS
-                      </span>
-                    ) : (
-                      <span className="text-cyan-300 font-extrabold tracking-wide">
-                        {amount} <span className="text-[10px] text-zinc-400">PLT</span>
-                      </span>
-                    )}
-
-                    {sale.originalPrice && sale.originalPrice !== amount ? (
-                      <span className="line-through text-zinc-600 font-semibold text-[10px]">
-                        {sale.originalPrice} PLT
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="text-[10px] text-zinc-400 font-mono flex items-center gap-1 pt-0.5">
-                    <Clock className="w-3 h-3 text-cyan-400" />
-                    <span>{getTimeLeft(sale.expiry, sale.eta)}</span>
-                  </div>
-                </div>
-
-                {/* Right Side: Discount Badge */}
-                {discountPercent > 0 && (
-                  <div className="shrink-0 bg-cyan-950/60 border border-cyan-800/60 text-cyan-300 text-xs font-mono font-black px-2.5 py-1.5 rounded-xl shadow-inner">
-                    -{discountPercent}%
-                  </div>
-                )}
-              </div>
-            )
-          })
-        )}
-      </div>
+      <MarketManifest emptyMessage={showCredits ? 'No active Market Flash Sales.' : 'No active Platinum Flash Sales.'}
+        deals={filteredSales.map((sale, idx) => {
+          const pricing = getDealPricing(sale)
+          return { id: sale.id || `sale-${idx}`, item: sale.item || 'Market item', price: pricing.amount, currency: pricing.isCredit ? 'CREDITS' as const : 'PLT' as const,
+            originalPrice: sale.originalPrice, discount: sale.discount || 0, popular: sale.isPopular || (sale.discount || 0) >= 50,
+            timer: getTimeLeft(sale.expiry, sale.eta) }
+        })} />
 
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent mt-1 mb-1.5" />
 

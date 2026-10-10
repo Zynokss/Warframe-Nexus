@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Anchor, Clock, Sparkles } from 'lucide-react'
-import { Fissure } from '@/types/warframe'
+import MissionEmblem from '@/components/MissionEmblem'
+import CardEmblem from '@/components/CardEmblem'
+import { useState } from 'react';
+import { Clock, Sparkles } from 'lucide-react';
+import { Fissure } from '@/types/warframe';
 
 interface VoidStormsCardProps {
   fissures?: (Fissure & { timeLeft?: string })[]
@@ -24,70 +26,8 @@ export default function VoidStormsCard({ fissures = [] }: VoidStormsCardProps) {
   })
 
   // Authentic In-Game Relic Target Ring Icon (Left)
-  const renderRelicTargetIcon = (tier: string) => {
-    const letter = tier?.charAt(0).toUpperCase() || 'V'
-    return (
-      <div className="w-12 h-12 rounded-full border border-zinc-600/80 bg-zinc-950/90 flex items-center justify-center shrink-0 relative shadow-inner">
-        {/* Rotating outer reticle ticks */}
-        <div className="absolute inset-0 rounded-full border border-dashed border-cyan-400/40 animate-[spin_30s_linear_infinite]" />
-        
-        {/* North/South/East/West Reticle Pointers */}
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-cyan-400 clip-triangle" />
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-cyan-400 clip-triangle rotate-180" />
-
-        {/* Tier Letter */}
-        <span className="font-mono font-black text-sm text-cyan-300 tracking-widest z-10 drop-shadow">
-          {letter}
-        </span>
-      </div>
-    )
-  }
 
   // Authentic In-Game Faction / Mission Emblem Icon (Right)
-  const renderFactionEmblem = (enemy: string) => {
-    const e = (enemy || '').toLowerCase()
-    
-    if (e.includes('grineer')) {
-      return (
-        <div className="w-12 h-12 rounded-xl bg-red-950/30 border border-red-900/50 flex items-center justify-center shrink-0 p-2 shadow-inner group-hover/row:border-red-500/50 transition">
-          <svg viewBox="0 0 24 24" className="w-full h-full text-red-500 filter drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]" fill="currentColor">
-            <path d="M12 2L2 22h20L12 2zm0 4l7.5 14h-15L12 6z" opacity="0.3" />
-            <path d="M12 8l5 10H7l5-10zm0-3l-7 14h14l-7-14z" />
-            <rect x="10" y="11" width="4" height="4" />
-          </svg>
-        </div>
-      )
-    }
-    if (e.includes('corpus')) {
-      return (
-        <div className="w-12 h-12 rounded-xl bg-cyan-950/30 border border-cyan-900/50 flex items-center justify-center shrink-0 p-2 shadow-inner group-hover/row:border-cyan-500/50 transition">
-          <svg viewBox="0 0 24 24" className="w-full h-full text-cyan-400 filter drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="9" />
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
-          </svg>
-        </div>
-      )
-    }
-    if (e.includes('infest')) {
-      return (
-        <div className="w-12 h-12 rounded-xl bg-emerald-950/30 border border-emerald-900/50 flex items-center justify-center shrink-0 p-2 shadow-inner group-hover/row:border-emerald-500/50 transition">
-          <svg viewBox="0 0 24 24" className="w-full h-full text-emerald-400 filter drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" fill="currentColor">
-            <path d="M12 2L4 18h16L12 2zm0 5l4.5 9h-9L12 7z" />
-            <circle cx="12" cy="14" r="2" fill="#0b0c12" />
-          </svg>
-        </div>
-      )
-    }
-    return (
-      <div className="w-12 h-12 rounded-xl bg-amber-950/30 border border-amber-900/50 flex items-center justify-center shrink-0 p-2 shadow-inner group-hover/row:border-amber-500/50 transition">
-        <svg viewBox="0 0 24 24" className="w-full h-full text-amber-400 filter drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" fill="none" stroke="currentColor" strokeWidth="2">
-          <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-          <circle cx="12" cy="12" r="3" />
-        </svg>
-      </div>
-    )
-  }
 
   // Safe time remaining calculation
   const getTimeLeft = (storm: Fissure & { timeLeft?: string }) => {
@@ -110,8 +50,8 @@ export default function VoidStormsCard({ fissures = [] }: VoidStormsCardProps) {
   }
 
   return (
-    <div className="bg-[#0b0c12] border border-[#232636] hover:border-cyan-500/50 rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between">
-      
+    <div data-card="storms" className="nexus-panel bg-[#0b0c12] border border-[#232636] hover:border-cyan-500/50 rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between">
+
       {/* Background Nebula & Starfield (Cyan Empyrean Glow) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[350px] bg-cyan-600/15 blur-[100px] rounded-full transition-all duration-700 opacity-80" />
@@ -119,9 +59,9 @@ export default function VoidStormsCard({ fissures = [] }: VoidStormsCardProps) {
       </div>
 
       {/* Header & Sorting Toggles */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
+      <div className="nexus-card-header flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
         <div className="flex items-center gap-2">
-          <Anchor className="w-4 h-4 text-cyan-400 animate-pulse" />
+          <CardEmblem kind="storms" />
           <h2 className="text-xs font-black text-cyan-400 uppercase tracking-widest">
             Void Storms
           </h2>
@@ -175,7 +115,7 @@ export default function VoidStormsCard({ fissures = [] }: VoidStormsCardProps) {
               >
                 {/* Left Side: Relic Target Ring Icon & Mission Details */}
                 <div className="flex items-center gap-3 min-w-0">
-                  {renderRelicTargetIcon(storm.tier)}
+                  <MissionEmblem type="relic" value={storm.tier} />
 
                   <div className="min-w-0 space-y-0.5">
                     <div className="flex items-center gap-2">
@@ -210,7 +150,7 @@ export default function VoidStormsCard({ fissures = [] }: VoidStormsCardProps) {
                 </div>
 
                 {/* Right Side: Authentic Faction Emblem */}
-                {renderFactionEmblem(storm.enemy)}
+                <MissionEmblem type="faction" value={storm.enemy} />
               </div>
             )
           })

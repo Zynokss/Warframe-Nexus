@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Filter, ExternalLink, Package, Shield, Check, X, Info, ChevronDown, ChevronUp, Loader2, ArrowRightLeft, Award } from 'lucide-react'
+import ArchiveHero from '@/components/ArchiveHero'
 import Navbar from '@/components/Navbar'
 
 interface WarframeItem {
@@ -35,13 +36,15 @@ export default function ItemArchivePage() {
   const [onlyMasterable, setOnlyMasterable] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
-  
+
   const rowsPerPage = 50
 
   const { data: items, isLoading, error } = useQuery({
     queryKey: ['warframe-items'],
     queryFn: fetchItems,
-    staleTime: Infinity, // The items API is huge (~15MB), cache it indefinitely per session
+    staleTime: Infinity, // Keep the catalog for this browser session.
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   })
 
   // Extract unique types and categories for the dropdowns
@@ -49,12 +52,12 @@ export default function ItemArchivePage() {
     if (!items) return { types: [], categories: [] }
     const typeSet = new Set<string>()
     const catSet = new Set<string>()
-    
+
     items.forEach(item => {
       if (item.type) typeSet.add(item.type)
       if (item.category) catSet.add(item.category)
     })
-    
+
     return {
       types: Array.from(typeSet).sort(),
       categories: Array.from(catSet).sort()
@@ -64,15 +67,15 @@ export default function ItemArchivePage() {
   // Filter the items based on user input
   const filteredItems = useMemo(() => {
     if (!items) return []
-    
+
     return items.filter(item => {
       const cleanedItemName = cleanName(item.name).toLowerCase()
       const searchLower = search.toLowerCase()
-      
-      const matchesSearch = 
-        cleanedItemName.includes(searchLower) || 
+
+      const matchesSearch =
+        cleanedItemName.includes(searchLower) ||
         (item.description?.toLowerCase().includes(searchLower))
-        
+
       const matchesType = typeFilter === 'ALL' || item.type === typeFilter
       const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter
       const matchesTradable = !onlyTradable || Boolean(item.tradable)
@@ -126,7 +129,7 @@ export default function ItemArchivePage() {
       <span className="text-xs text-zinc-500">
         Showing {(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, filteredItems.length)} of {filteredItems.length} items
       </span>
-      
+
       <div className="flex items-center gap-1 bg-[#050508] p-1.5 rounded-xl border border-zinc-800">
         <button
           onClick={() => setCurrentPage(1)}
@@ -135,7 +138,7 @@ export default function ItemArchivePage() {
         >
           First
         </button>
-        
+
         {getPageNumbers().map(num => (
           <button
             key={num}
@@ -162,35 +165,26 @@ export default function ItemArchivePage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#050508] text-zinc-100 font-mono relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="nexus-page nexus-utility archive-page archive-items min-h-screen bg-[#050508] text-zinc-100 font-mono relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370f_1px,transparent_1px),linear-gradient(to_bottom,#1f29370f_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
 
       <Navbar />
 
       <main className="p-4 md:p-6 space-y-6 relative z-10 max-w-5xl mx-auto">
-        
+
         {/* Header Section */}
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-widest uppercase drop-shadow-lg flex items-center justify-center gap-3">
-            <Package className="w-8 h-8 md:w-10 md:h-10 text-amber-500" />
-            Item Archive
-          </h1>
-          <p className="text-sm font-bold text-amber-400">
-            {items ? `${items.length.toLocaleString()} items indexed` : 'Loading index...'}
-          </p>
-          <p className="text-xs text-zinc-400 max-w-xl mx-auto">
-            Search Warframe gear, mods, and collectibles from the WFCD Items API.
-          </p>
-        </div>
+        <ArchiveHero kind="items" metrics={[{ label: 'Indexed items', value: items ? items.length.toLocaleString() : 'Syncing…' }, { label: 'Matched records', value: filteredItems.length.toLocaleString() }, { label: 'Data source', value: 'WFCD Items' }]} />
+
 
         {/* Filters & Search Control Bar */}
-        <div className="bg-[#0b0c10] border border-zinc-800/80 p-3 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-2xl">
-          
+        <div className="archive-toolbar bg-[#0b0c10] border border-zinc-800/80 p-3 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-2xl">
+
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
             {/* Type Filter */}
             <div className="flex items-center gap-2 bg-[#050508] border border-zinc-800 rounded-xl px-3 py-2 shrink-0">
               <Filter className="w-4 h-4 text-zinc-500" />
-              <select 
+              <select
+                aria-label="Item type"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="bg-transparent text-xs text-zinc-200 outline-none cursor-pointer w-32"
@@ -205,7 +199,8 @@ export default function ItemArchivePage() {
             {/* Category Filter */}
             <div className="flex items-center gap-2 bg-[#050508] border border-zinc-800 rounded-xl px-3 py-2 shrink-0">
               <Shield className="w-4 h-4 text-zinc-500" />
-              <select 
+              <select
+                aria-label="Item category"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="bg-transparent text-xs text-zinc-200 outline-none cursor-pointer w-32"
@@ -219,6 +214,7 @@ export default function ItemArchivePage() {
 
             {/* Tradable Toggle */}
             <button
+              aria-pressed={onlyTradable}
               onClick={() => setOnlyTradable(!onlyTradable)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border shrink-0 cursor-pointer ${
                 onlyTradable
@@ -232,6 +228,7 @@ export default function ItemArchivePage() {
 
             {/* Masterable Toggle */}
             <button
+              aria-pressed={onlyMasterable}
               onClick={() => setOnlyMasterable(!onlyMasterable)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border shrink-0 cursor-pointer ${
                 onlyMasterable
@@ -247,8 +244,9 @@ export default function ItemArchivePage() {
           {/* Search Bar */}
           <div className="relative w-full md:w-72 shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-            <input 
+            <input
               type="text"
+              aria-label="Search the item archive"
               placeholder="Search by name or description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -281,16 +279,26 @@ export default function ItemArchivePage() {
               const displayName = cleanName(item.name)
 
               return (
-                <div 
+                <div
                   key={item.uniqueName}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isExpanded}
+                  aria-label={`Details for ${displayName}`}
+                  onKeyDown={(event) => {
+                    if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                      event.preventDefault()
+                      toggleExpand(item.uniqueName)
+                    }
+                  }}
                   onClick={() => toggleExpand(item.uniqueName)}
-                  className="bg-[#0b0c10] border border-zinc-800/80 hover:border-amber-900/50 rounded-2xl p-3 md:p-4 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-amber-900/10 group flex gap-4"
+                  className="archive-item bg-[#0b0c10] border border-zinc-800/80 hover:border-amber-900/50 rounded-2xl p-3 md:p-4 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-amber-900/10 group flex gap-4"
                 >
                   {/* Image Thumbnail */}
                   <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-[#050508] rounded-xl border border-zinc-800/50 p-1 flex items-center justify-center overflow-hidden">
                     {item.imageName ? (
-                      <img 
-                        src={`https://cdn.warframestat.us/img/${item.imageName}`} 
+                      <img
+                        src={`https://cdn.warframestat.us/img/${item.imageName}`}
                         alt={displayName}
                         loading="lazy"
                         className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300"
@@ -307,7 +315,7 @@ export default function ItemArchivePage() {
                         <h3 className="text-sm md:text-base font-bold text-zinc-100 truncate group-hover:text-amber-400 transition-colors">
                           {displayName}
                         </h3>
-                        
+
                         {/* Tags */}
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
                           {item.category && (
@@ -336,9 +344,9 @@ export default function ItemArchivePage() {
                           </span>
                         </div>
                         {item.wikiaUrl && (
-                          <a 
-                            href={item.wikiaUrl} 
-                            target="_blank" 
+                          <a
+                            href={item.wikiaUrl}
+                            target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()} // Prevent row expansion when clicking link
                             className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white bg-[#050508] px-2.5 py-1 rounded-lg border border-zinc-800 hover:border-zinc-600 transition-colors"
@@ -356,7 +364,7 @@ export default function ItemArchivePage() {
                         <p>{item.description}</p>
                       </div>
                     )}
-                    
+
                     {/* Mobile Only Details (Shown when expanded) */}
                     {isExpanded && (
                       <div className="mt-3 md:hidden flex flex-wrap gap-2">
@@ -367,9 +375,9 @@ export default function ItemArchivePage() {
                             {item.masterable ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />} Masterable
                           </span>
                           {item.wikiaUrl && (
-                          <a 
-                            href={item.wikiaUrl} 
-                            target="_blank" 
+                          <a
+                            href={item.wikiaUrl}
+                            target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-zinc-300 bg-[#050508] px-2 py-1 rounded-md border border-zinc-800"

@@ -1,0 +1,5 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import InfoPage from '@/components/InfoPage'
+export const metadata: Metadata = { title: 'Support the project — Warframe Nexus' }
+export default function SupportPage(){return <InfoPage title="Support the project" intro="Keeping an independent field companion free for Tenno."><section><h2>Free access</h2><p>All current features are free to use. Voluntary support and unobtrusive advertising are planned to help with hosting and upkeep; no providers have been selected.</p></section><section><h2>Donations are not open yet</h2><p>This version has no donation checkout. A verified payment link, recipient information, and any recurring-payment, cancellation and refund details will be published before support payments are accepted.</p><p>Future support would go to the independent site operator, not Digital Extremes. No charitable status or tax deduction is claimed.</p></section><section><h2>Help without a payment</h2><p>Share Nexus with other players, report inaccurate information, and send suggestions through the <Link href="/contact">contact page</Link>.</p></section></InfoPage>}

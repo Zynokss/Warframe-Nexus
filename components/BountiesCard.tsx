@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Award, Clock, ChevronRight, Layers, Sparkles } from 'lucide-react'
-import { SyndicateMission } from '@/types/warframe'
+import BountyBoard from '@/components/BountyBoard'
+import CardEmblem from '@/components/CardEmblem'
+import { useState } from 'react';
+import { Clock, Sparkles } from 'lucide-react';
+import { SyndicateMission } from '@/types/warframe';
 
 type BountiesCardProps = {
   syndicateMissions?: (SyndicateMission & {
@@ -113,8 +115,8 @@ export default function BountiesCard({ syndicateMissions = [] }: BountiesCardPro
   const jobs = activeMission?.jobs || []
 
   return (
-    <div className={`bg-[#0b0c12] border border-[#232636] hover:${currentHub.accentBorder} rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between`}>
-      
+    <div data-card="bounties" className={`nexus-panel bg-[#0b0c12] border border-[#232636] hover:${currentHub.accentBorder} rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between`}>
+
       {/* Full-Card Foggy Nebula & Starfield Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
         <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[350px] ${currentHub.glowBg} blur-[100px] rounded-full transition-all duration-700 opacity-80`} />
@@ -122,9 +124,9 @@ export default function BountiesCard({ syndicateMissions = [] }: BountiesCardPro
       </div>
 
       {/* Header & Expiry */}
-      <div className="flex items-center justify-between pb-2.5 relative z-10">
+      <div className="nexus-card-header flex items-center justify-between pb-2.5 relative z-10">
         <div className="flex items-center gap-2">
-          <Award className={`w-4 h-4 ${currentHub.accentText} animate-pulse`} />
+          <CardEmblem kind="bounties" />
           <h2 className={`text-xs font-black uppercase tracking-widest ${currentHub.accentText}`}>
             Open World Bounties
           </h2>
@@ -137,13 +139,14 @@ export default function BountiesCard({ syndicateMissions = [] }: BountiesCardPro
       </div>
 
       {/* Syndicate Selector Tabs */}
-      <div className="grid grid-cols-4 gap-1.5 bg-[#12131c]/70 backdrop-blur-md p-1 rounded-xl border border-[#232636] text-[10px] relative z-10 mb-2">
+      <div className="nexus-selector grid grid-cols-4 gap-1.5 bg-[#12131c]/70 backdrop-blur-md p-1 rounded-xl border border-[#232636] text-[10px] relative z-10 mb-2">
         {(Object.keys(SYNDICATE_MAP) as SyndicateKey[]).map((key) => {
           const isActive = activeTab === key
           const info = SYNDICATE_MAP[key]
           return (
             <button
               key={key}
+              aria-pressed={isActive}
               onClick={() => setActiveTab(key)}
               className={`py-1 rounded-lg font-bold transition text-center truncate cursor-pointer ${
                 isActive
@@ -160,45 +163,7 @@ export default function BountiesCard({ syndicateMissions = [] }: BountiesCardPro
       {/* Soft Fading Divider Line (Top) */}
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent my-1" />
 
-      {/* Bounties Job List */}
-      <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar relative z-10 my-1">
-        {jobs.length === 0 ? (
-          <p className="text-xs text-zinc-400 py-6 text-center font-medium">
-            No active bounty telemetry for {currentHub.name}.
-          </p>
-        ) : (
-          jobs.map((job, idx) => {
-            const minLevel = job.enemyLevels?.[0] ?? 0
-            const maxLevel = job.enemyLevels?.[1] ?? 0
-            const levelString = maxLevel > 0 ? `Lvl ${minLevel}-${maxLevel}` : 'Standard'
-
-            return (
-              <div
-                key={job.id || `job-${idx}`}
-                className="bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] hover:border-zinc-500 transition space-y-1 group/item shadow-sm"
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-zinc-100 group-hover/item:text-white transition flex items-center gap-1.5 truncate pr-2">
-                    <ChevronRight className={`w-3.5 h-3.5 ${currentHub.accentText} shrink-0`} />
-                    {job.type || 'Syndicate Bounty'}
-                  </span>
-                  <span className="text-[10px] bg-[#0a0b0e] text-zinc-300 px-2 py-0.5 rounded-md border border-zinc-700/80 shrink-0 font-mono font-bold">
-                    {levelString}
-                  </span>
-                </div>
-
-                {/* Standing & Rewards preview */}
-                {job.rewardPool && job.rewardPool.length > 0 && (
-                  <div className="flex items-center gap-1 text-[10px] text-zinc-400 truncate pl-5 font-mono">
-                    <Layers className="w-3 h-3 text-zinc-500 shrink-0" />
-                    <span className="truncate">{job.rewardPool.slice(0, 3).join(' · ')}</span>
-                  </div>
-                )}
-              </div>
-            )
-          })
-        )}
-      </div>
+      <BountyBoard hub={currentHub.name} jobs={jobs} timer={getTimeLeft(activeMission?.expiry, activeMission?.eta)} />
 
       {/* Soft Fading Divider Line (Bottom) */}
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent mt-1 mb-2" />

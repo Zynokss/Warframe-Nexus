@@ -1,0 +1,10 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import InfoPage from '@/components/InfoPage'
+import { site } from '@/lib/site'
+export const metadata: Metadata = { title: 'Legal notice — Warframe Nexus' }
+export default function LegalPage(){return <InfoPage title="Legal notice" intro="Who operates Nexus, what belongs to its creators, and how this fan project relates to Warframe.">
+<section><h2>Independent fan project</h2><p>Warframe Nexus is independently operated from Morocco at warframenexus.com. It is not affiliated with, endorsed by, or sponsored by Digital Extremes. {site.operator ? `Operator: ${site.operator}.` : 'The operator’s public identity is pending confirmation.'}</p><p>Contact details and rights-related requests are available on the <Link href="/contact">contact page</Link>.</p></section>
+<section><h2>Ownership and attribution</h2><p>Warframe, its game assets, character designs, and associated trademarks belong to Digital Extremes Ltd. and their respective owners. Community data and third-party materials remain subject to their own rights and licenses. Generated Warframe-inspired artwork on this site is fan artwork, not official Digital Extremes artwork.</p><p>Acknowledgment of ownership is not a grant of permission. The operator must resolve any required permissions for existing logos and third-party assets before public use. See the <a href="https://www.warframe.com/en/contentpolicy" target="_blank" rel="noopener noreferrer">Warframe content policy</a> and <Link href="/credits">source credits</Link>.</p></section>
+<section><h2>Privacy and monetization</h2><p>The site is free to access. Advertising and voluntary project support are planned; providers have not been selected. This version does not offer a payment checkout or integrate advertising scripts. Provider and privacy details will be updated before activation.</p><p>Hosting-log retention, applicable CNDP formalities, and any provider-specific disclosures require confirmation. These pages describe the current application; they do not certify regulatory compliance.</p></section>
+</InfoPage>}

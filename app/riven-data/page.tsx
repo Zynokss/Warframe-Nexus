@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, XCircle, Search, AlertTriangle, RefreshCw, Filter, Monitor, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import ArchiveHero from '@/components/ArchiveHero'
 import Navbar from '@/components/Navbar'
 
 interface DERivenItem {
@@ -37,6 +38,7 @@ export default function RivenDataPage() {
     queryKey: ['rivens-de-raw', platform],
     queryFn: () => fetchRawDERivens(platform),
     staleTime: 1000 * 60 * 60 * 12,
+    refetchInterval: false,
   })
 
   // Extract available Riven types
@@ -88,23 +90,14 @@ export default function RivenDataPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050508] text-zinc-100 font-mono relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="nexus-page nexus-utility archive-page archive-riven min-h-screen bg-[#050508] text-zinc-100 font-mono relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370f_1px,transparent_1px),linear-gradient(to_bottom,#1f29370f_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
 
       <Navbar />
 
       <main className="p-4 md:p-6 space-y-6 relative z-10 max-w-7xl mx-auto">
-        <div className="text-center space-y-2 mb-4">
-          <h1 className="text-3xl md:text-4xl font-black text-white tracking-widest uppercase drop-shadow-lg">
-            Riven Data
-          </h1>
-          <p className="text-xs font-bold text-amber-400 tracking-wider">
-            Platform: {platform}
-          </p>
-          <p className="text-[11px] text-zinc-400 max-w-xl mx-auto">
-            Aggregated from DE&apos;s weekly Riven trade data via WFCD. All of this data is made up of Riven + Platinum trades, excluding 1-Platinum trades.
-          </p>
-        </div>
+        <ArchiveHero kind="riven" metrics={[{ label: 'Platform', value: platform }, { label: 'Trade records', value: rivens ? rivens.length.toLocaleString() : 'Syncing…' }, { label: 'Data source', value: 'WFCD / DE' }]} />
+
 
         {/* Top Pagination */}
         {!isLoading && totalPages > 1 && (
@@ -160,12 +153,13 @@ export default function RivenDataPage() {
         )}
 
         {/* Toolbar */}
-        <div className="bg-[#0b0c10] border border-zinc-800/80 p-3 rounded-xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-2xl">
+        <div className="archive-toolbar bg-[#0b0c10] border border-zinc-800/80 p-3 rounded-xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-2xl">
           <div className="flex items-center gap-2.5 w-full md:w-auto overflow-x-auto custom-scrollbar pb-1 md:pb-0">
             {/* Platform Dropdown */}
             <div className="flex items-center gap-2 bg-[#050508] border border-amber-900/40 rounded-lg px-3 py-1.5 shrink-0">
               <Monitor className="w-3.5 h-3.5 text-amber-400" />
               <select
+                aria-label="Riven platform"
                 value={platform}
                 onChange={(e) => {
                   setPlatform(e.target.value as any)
@@ -184,6 +178,7 @@ export default function RivenDataPage() {
             <div className="flex items-center gap-2 bg-[#050508] border border-zinc-800 rounded-lg px-3 py-1.5 shrink-0">
               <Filter className="w-3.5 h-3.5 text-zinc-500" />
               <select
+                aria-label="Riven category"
                 value={typeFilter}
                 onChange={(e) => {
                   setTypeFilter(e.target.value)
@@ -203,6 +198,7 @@ export default function RivenDataPage() {
             {/* Rolled Filter */}
             <div className="flex items-center gap-2 bg-[#050508] border border-zinc-800 rounded-lg px-3 py-1.5 shrink-0">
               <select
+                aria-label="Reroll status"
                 value={rolledFilter}
                 onChange={(e) => {
                   setRolledFilter(e.target.value as any)
@@ -222,7 +218,8 @@ export default function RivenDataPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input
               type="text"
-              placeholder="Type to Search..."
+              aria-label="Search Riven weapons"
+              placeholder="Search weapons..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
@@ -234,9 +231,9 @@ export default function RivenDataPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-[#0b0c10] border border-zinc-800/80 rounded-xl shadow-2xl overflow-hidden">
+        <div className="riven-table-frame bg-[#0b0c10] border border-zinc-800/80 rounded-xl shadow-2xl overflow-hidden">
           <div className="overflow-x-auto custom-scrollbar max-h-[720px]">
-            <table className="w-full text-left text-xs whitespace-nowrap">
+            <table aria-label="Aggregated Riven trade statistics" className="w-full text-left text-xs whitespace-nowrap">
               <thead className="bg-[#07080c] sticky top-0 z-10 border-b border-zinc-800 shadow-md">
                 <tr className="text-zinc-400">
                   <th className="px-4 py-3 font-bold tracking-wider">Weapon</th>

@@ -1,16 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { Radio, Gem, ShieldCheck, Copy, Check, ArrowUpRight, Compass } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import { Info, Terminal, Cpu, Database, Copy, Check, Share2 } from 'lucide-react'
+import ArchiveHero from '@/components/ArchiveHero'
+import { site } from '@/lib/site'
 
-interface PlatformTag {
-  platform: string
-  suffix: string
-  example: string
-}
-
-const PLATFORM_TAGS: PlatformTag[] = [
+const PLATFORM_TAGS = [
   { platform: 'PC / Cross-Play', suffix: '#000', example: 'Tenno#000' },
   { platform: 'PlayStation', suffix: '#100', example: 'Tenno#100' },
   { platform: 'Xbox', suffix: '#200', example: 'Tenno#200' },
@@ -19,94 +16,22 @@ const PLATFORM_TAGS: PlatformTag[] = [
 
 export default function AboutPage() {
   const [copiedSuffix, setCopiedSuffix] = useState<string | null>(null)
-
-  const handleCopy = (suffix: string) => {
-    navigator.clipboard.writeText(suffix)
-    setCopiedSuffix(suffix)
-    setTimeout(() => setCopiedSuffix(null), 2000)
+  const [copyMessage, setCopyMessage] = useState('')
+  async function handleCopy(suffix: string) {
+    try {
+      await navigator.clipboard.writeText(suffix)
+      setCopiedSuffix(suffix)
+      setCopyMessage('Copied to clipboard.')
+      setTimeout(() => setCopiedSuffix(null), 2000)
+    } catch { setCopyMessage('Clipboard access was unavailable. You can copy the displayed suffix manually.') }
   }
+  return <div className="nexus-page nexus-utility archive-page archive-about min-h-screen"><Navbar /><main className="archive-about-main">
 
-  return (
-    <div className="min-h-screen bg-[#07070a] text-zinc-100 font-mono">
-      <Navbar />
-
-      <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase flex items-center gap-2">
-            <Info className="w-6 h-6 text-sky-400" /> About WARFRAME // NEXUS
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            System architecture, API telemetry sources, and platform identifier formatting tools.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Architecture Overview */}
-          <div className="bg-zinc-900/60 border border-zinc-800 rounded p-4 space-y-4">
-            <h2 className="text-sm font-bold text-zinc-200 border-b border-zinc-800 pb-2 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-red-500" /> Telemetry Architecture
-            </h2>
-
-            <div className="space-y-3 text-xs text-zinc-300">
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800 space-y-1">
-                <div className="text-white font-bold flex items-center gap-1.5">
-                  <Database className="w-3.5 h-3.5 text-amber-400" /> Data Provider
-                </div>
-                <p className="text-zinc-400 text-[11px]">
-                  Real-time telemetry fetched via the Warframe Stat API (`api.warframestat.us`), mirrored directly from Digital Extremes official WorldState endpoints.
-                </p>
-              </div>
-
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800 space-y-1">
-                <div className="text-white font-bold flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-emerald-400" /> Polling & Cache Policy
-                </div>
-                <p className="text-zinc-400 text-[11px]">
-                  Serverless proxy routes revalidate payload responses every 30 seconds to prevent API rate limiting while maintaining low-latency timer accuracy.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Platform Suffix Tool */}
-          <div className="bg-zinc-900/60 border border-zinc-800 rounded p-4 space-y-4">
-            <h2 className="text-sm font-bold text-zinc-200 border-b border-zinc-800 pb-2 flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-purple-400" /> Cross-Platform Suffix Format
-            </h2>
-
-            <div className="space-y-2 text-xs">
-              {PLATFORM_TAGS.map((p, idx) => (
-                <div
-                  key={idx}
-                  className="bg-zinc-950/80 p-2.5 rounded border border-zinc-800 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-bold text-zinc-200">{p.platform}</div>
-                    <div className="text-[10px] text-zinc-500">
-                      Example: <span className="text-zinc-300 font-bold">{p.example}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleCopy(p.suffix)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded text-xs text-zinc-300 transition"
-                  >
-                    {copiedSuffix === p.suffix ? (
-                      <>
-                        <Check className="w-3 h-3 text-emerald-400" /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3" /> {p.suffix}
-                      </>
-                    )}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+    <ArchiveHero kind="about" metrics={[{ label: 'Created by', value: site.creator }, { label: 'Access', value: 'Free for Tenno' }, { label: 'Project', value: 'Independent' }]} />
+    <div className="about-introduction"><span className="nexus-eyebrow">A FIELD COMPANION, MADE WITH PURPOSE</span><h2>Less searching.<br /><span>More time in the Origin System.</span></h2><p>Nexus brings world-state feeds, item records, and Riven trade statistics into one place. Built by {site.creator}, operated by {site.operator} from Morocco, and designed for players who want useful information without losing the atmosphere of Warframe.</p></div>
+    <section className="about-capabilities" aria-label="What Nexus offers">{[{ icon: Radio, title: 'Live intelligence', text: 'PC world-state cycles, missions, vendors, and rotations from community feeds.' }, { icon: Gem, title: 'Useful archives', text: 'Searchable item records and aggregated Riven trade statistics across platforms.' }, { icon: ShieldCheck, title: 'Your own console', text: 'Dashboard preferences and weekly checkmarks saved in your browser.' }].map(({icon:Icon,title,text})=><article key={title}><Icon size={25} strokeWidth={1} /><h3>{title}</h3><p>{text}</p></article>)}</section>
+    <div className="about-detail-grid"><section className="about-source-panel"><span className="intel-kicker">Community-powered information</span><h2>The signal behind Nexus</h2><p>WarframeStat and WFCD provide the world-state, item, and Riven datasets. Feeds may be delayed or incomplete; historical Riven statistics are not current market listings.</p><p>Nexus is not connected to your Warframe account. Some secondary tools contain limited or sample data.</p><Link href="/credits">Meet the data sources <ArrowUpRight size={13} /></Link><Link href="/contact">Contact {site.creator} <ArrowUpRight size={13} /></Link></section>
+    <section className="about-suffix-panel"><span className="intel-kicker">Preserved reference tool</span><h2>Platform suffix examples</h2><p>Copy a suffix from the existing reference list. Confirm the full player identifier in-game before using it.</p>{PLATFORM_TAGS.map(tag=><div className="about-suffix-row" key={tag.platform}><div><strong>{tag.platform}</strong><span>{tag.example}</span></div><button onClick={() => handleCopy(tag.suffix)} aria-label={`Copy ${tag.platform} suffix`}>{copiedSuffix===tag.suffix ? <Check size={12} /> : <Copy size={12} />}{copiedSuffix===tag.suffix ? 'Copied' : tag.suffix}</button></div>)}<p role="status" className="about-copy-status">{copyMessage}</p></section></div>
+    <section className="about-independent"><Compass size={26} strokeWidth={1} /><div><h2>An independent fan project</h2><p>Nexus is not affiliated with or endorsed by Digital Extremes. Warframe and its game assets belong to their respective owners.</p></div><Link href="/legal">Legal notice <ArrowUpRight size={13} /></Link></section>
+  </main></div>
 }

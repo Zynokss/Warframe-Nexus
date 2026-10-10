@@ -1,19 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import { ShieldAlert, Target, Zap, ChevronRight, Skull, Sparkles } from 'lucide-react'
-import { Sortie, ArchonHunt, DeepArchimedea } from '@/types/warframe'
+import MissionBriefing from '@/components/MissionBriefing'
+import CardEmblem from '@/components/CardEmblem'
+import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
+import { Sortie, ArchonHunt, Archimedea } from '@/types/warframe';
 
 interface EndgameCardProps {
   sortie?: Sortie
   archonHunt?: ArchonHunt
-  deepArchimedea?: DeepArchimedea
+  archimedeas?: Archimedea[]
 }
 
-type Mode = 'SORTIE' | 'ARCHON' | 'ARCHIMEDEA'
+type Mode = 'SORTIE' | 'ARCHON' | 'ARCHIMEDEA' | 'TEMPORAL'
 
-export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: EndgameCardProps) {
+export default function EndgameCard({ sortie, archonHunt, archimedeas = [] }: EndgameCardProps) {
   const [activeTab, setActiveTab] = useState<Mode>('SORTIE')
+
+  const deep = archimedeas.find(item => item.type === 'Deep Archimedea')
+  const temporal = archimedeas.find(item => item.type === 'Temporal Archimedea')
+  const deepArchimedea = activeTab === 'TEMPORAL' ? temporal : deep
 
   // Safe time remaining helper
   const getTimeLeft = (eta?: string, expiry?: string) => {
@@ -49,6 +55,7 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
           badgeStyle: 'bg-amber-950/70 border-amber-700/60 text-amber-300',
           tabActive: 'bg-amber-500 text-zinc-950 shadow-md font-extrabold',
         }
+      case 'TEMPORAL':
       case 'ARCHIMEDEA':
         return {
           accentText: 'text-purple-400',
@@ -73,8 +80,8 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
   const theme = getTheme()
 
   return (
-    <div className={`bg-[#0b0c12] border border-[#232636] hover:${theme.accentBorder} rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between`}>
-      
+    <div data-card="endgame" className={`nexus-panel bg-[#0b0c12] border border-[#232636] hover:${theme.accentBorder} rounded-2xl p-3.5 md:p-4 font-sans shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col justify-between`}>
+
       {/* Full-Card Foggy Nebula & Starfield Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
         <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[350px] ${theme.glowBg} blur-[100px] rounded-full transition-all duration-700 opacity-80`} />
@@ -82,17 +89,18 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
       </div>
 
       {/* Header & Activity Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
+      <div className="nexus-card-header flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 gap-2 relative z-10">
         <div className="flex items-center gap-2">
-          <ShieldAlert className={`w-4 h-4 ${theme.accentText} animate-pulse`} />
+          <CardEmblem kind="endgame" />
           <h2 className={`text-xs font-black uppercase tracking-widest ${theme.accentText}`}>
             Tactical Operations
           </h2>
         </div>
 
         {/* Mode Selector */}
-        <div className="flex items-center bg-[#12131c]/80 backdrop-blur-md p-1 rounded-xl border border-[#232636] text-[10px]">
+        <div className="nexus-selector flex items-center bg-[#12131c]/80 backdrop-blur-md p-1 rounded-xl border border-[#232636] text-[10px]">
           <button
+            aria-pressed={activeTab === 'SORTIE'}
             onClick={() => setActiveTab('SORTIE')}
             className={`px-2 py-0.5 rounded-lg transition font-mono font-bold cursor-pointer ${
               activeTab === 'SORTIE' ? theme.tabActive : 'text-zinc-400 hover:text-white'
@@ -101,6 +109,7 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
             SORTIE
           </button>
           <button
+            aria-pressed={activeTab === 'ARCHON'}
             onClick={() => setActiveTab('ARCHON')}
             className={`px-2 py-0.5 rounded-lg transition font-mono font-bold cursor-pointer ${
               activeTab === 'ARCHON' ? theme.tabActive : 'text-zinc-400 hover:text-white'
@@ -108,9 +117,10 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
           >
             ARCHON
           </button>
-          {deepArchimedea && (
+          {deep && (
             <button
-              onClick={() => setActiveTab('ARCHIMEDEA')}
+              aria-pressed={activeTab === 'ARCHIMEDEA'}
+            onClick={() => setActiveTab('ARCHIMEDEA')}
               className={`px-2 py-0.5 rounded-lg transition font-mono font-bold cursor-pointer ${
                 activeTab === 'ARCHIMEDEA' ? theme.tabActive : 'text-zinc-400 hover:text-white'
               }`}
@@ -118,161 +128,20 @@ export default function EndgameCard({ sortie, archonHunt, deepArchimedea }: Endg
               DA
             </button>
           )}
+          {temporal && <button aria-pressed={activeTab === 'TEMPORAL'} onClick={() => setActiveTab('TEMPORAL')}
+            className={`px-2 py-0.5 rounded-lg transition font-mono font-bold cursor-pointer ${activeTab === 'TEMPORAL' ? theme.tabActive : 'text-zinc-400 hover:text-white'}`} title="Temporal Archimedea">TA</button>}
         </div>
       </div>
 
       {/* Soft Fading Divider Line (Top) */}
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent my-1" />
 
-      {/* Tab 1: Daily Sortie */}
-      {activeTab === 'SORTIE' && (
-        <div className="space-y-2 relative z-10 my-1">
-          <div className="flex items-center justify-between text-xs bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] shadow-sm">
-            <div className="space-y-0.5 min-w-0">
-              <span className="text-[9px] text-red-400 font-mono font-bold uppercase tracking-widest block">
-                TARGET BOSS
-              </span>
-              <span className="font-bold text-zinc-100 flex items-center gap-1.5 truncate">
-                <Skull className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                {sortie?.boss || 'Unknown Threat'}
-              </span>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-[9px] text-zinc-400 font-mono block font-bold">FACTION</span>
-              <span className="text-[11px] font-mono font-bold text-amber-400">{sortie?.faction || 'Grineer'}</span>
-            </div>
-          </div>
-
-          {/* Missions Checklist */}
-          <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-            {sortie?.variants?.map((mission: Record<string, any>, idx: number) => {
-              const missionName = mission.missionType || mission.type || 'Mission'
-              const nodeName = mission.node || ''
-              const modifierName = mission.modifier || mission.modifierDescription || ''
-
-              return (
-                <div
-                  key={`sortie-m-${idx}`}
-                  className="bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] hover:border-zinc-500 transition space-y-1 shadow-sm"
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-zinc-100 flex items-center gap-1.5">
-                      <span className="w-4 h-4 rounded-md bg-red-950/80 text-red-300 border border-red-700/60 text-[10px] font-mono flex items-center justify-center font-black shrink-0">
-                        {idx + 1}
-                      </span>
-                      {missionName}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[40%]">
-                      {nodeName}
-                    </span>
-                  </div>
-
-                  {modifierName && (
-                    <div className="flex items-center gap-1 text-[10px] text-amber-300 bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-800/50 font-mono">
-                      <Zap className="w-3 h-3 text-amber-400 shrink-0" />
-                      <span className="truncate">{modifierName}</span>
-                    </div>
-                  )}
-                </div>
-              )
-            }) || <p className="text-xs text-zinc-400 py-3 text-center font-medium">No active Sortie telemetry.</p>}
-          </div>
-
-          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 pt-1.5 border-t border-zinc-800/60 font-semibold px-1">
-            <span>DAILY REFRESH</span>
-            <span className="text-red-400 font-bold">{getTimeLeft(sortie?.eta, sortie?.expiry)}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Archon Hunt */}
-      {activeTab === 'ARCHON' && (
-        <div className="space-y-2 relative z-10 my-1">
-          <div className="flex items-center justify-between text-xs bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] shadow-sm">
-            <div className="space-y-0.5 min-w-0">
-              <span className="text-[9px] text-amber-400 font-mono font-bold uppercase tracking-widest block">
-                ARCHON TARGET
-              </span>
-              <span className="font-bold text-zinc-100 flex items-center gap-1.5 truncate">
-                <Target className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                {archonHunt?.boss || 'Archon Nira'}
-              </span>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-[9px] text-zinc-400 font-mono block font-bold">FACTION</span>
-              <span className="text-[11px] font-mono font-bold text-amber-400">{archonHunt?.faction || 'Narmer'}</span>
-            </div>
-          </div>
-
-          <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-            {archonHunt?.missions?.map((mission: Record<string, any>, idx: number) => {
-              const missionName = mission.type || mission.missionType || 'Mission'
-              const nodeName = mission.node || ''
-
-              return (
-                <div
-                  key={`archon-m-${idx}`}
-                  className="bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] hover:border-zinc-500 transition space-y-1 shadow-sm"
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-zinc-100 flex items-center gap-1.5">
-                      <span className="w-4 h-4 rounded-md bg-amber-950/80 text-amber-300 border border-amber-700/60 text-[10px] font-mono flex items-center justify-center font-black shrink-0">
-                        {idx + 1}
-                      </span>
-                      {missionName}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[40%]">
-                      {nodeName}
-                    </span>
-                  </div>
-                </div>
-              )
-            }) || <p className="text-xs text-zinc-400 py-3 text-center font-medium">No active Archon Hunt telemetry.</p>}
-          </div>
-
-          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 pt-1.5 border-t border-zinc-800/60 font-semibold px-1">
-            <span>WEEKLY REFRESH</span>
-            <span className="text-amber-400 font-bold">{getTimeLeft(archonHunt?.eta, archonHunt?.expiry)}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Deep Archimedea */}
-      {activeTab === 'ARCHIMEDEA' && deepArchimedea && (
-        <div className="space-y-2 relative z-10 my-1">
-          <div className="bg-[#12131c]/80 backdrop-blur-md p-2.5 rounded-xl border border-[#232636] space-y-0.5 shadow-sm">
-            <span className="text-[9px] text-purple-400 font-mono font-bold uppercase tracking-widest block">
-              ALBRECHT'S LABORATORY
-            </span>
-            <p className="text-xs font-bold text-zinc-100">Cavia Deep Archimedea Sector</p>
-          </div>
-
-          <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-            {deepArchimedea.missions?.map((mission: Record<string, any>, idx: number) => {
-              const missionName = mission.missionType || mission.type || mission.name || 'Mission'
-              const nodeName = mission.node || ''
-
-              return (
-                <div
-                  key={`da-m-${idx}`}
-                  className="bg-[#12131c]/80 backdrop-blur-md p-2 rounded-xl border border-[#232636] hover:border-zinc-500 transition flex items-center justify-between text-xs shadow-sm"
-                >
-                  <span className="font-bold text-purple-300 flex items-center gap-1.5">
-                    <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
-                    {missionName}
-                  </span>
-                  {nodeName && <span className="text-[10px] text-zinc-400 font-mono">{nodeName}</span>}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 pt-1.5 border-t border-zinc-800/60 font-semibold px-1">
-            <span>WEEKLY RESET</span>
-            <span className="text-purple-400 font-bold">{getTimeLeft(deepArchimedea.eta, deepArchimedea.expiry)}</span>
-          </div>
-        </div>
-      )}
+      <MissionBriefing mode={activeTab}
+        title={activeTab === 'SORTIE' ? sortie?.boss || 'Target unconfirmed' : activeTab === 'ARCHON' ? archonHunt?.boss || 'Target unconfirmed' : deepArchimedea?.type || 'Archimedea'}
+        faction={activeTab === 'SORTIE' ? sortie?.faction : activeTab === 'ARCHON' ? archonHunt?.faction : activeTab === 'TEMPORAL' ? 'Höllvania' : 'Albrecht’s laboratory'}
+        missions={activeTab === 'SORTIE' ? sortie?.variants : activeTab === 'ARCHON' ? archonHunt?.missions : deepArchimedea?.missions}
+        personalModifiers={activeTab === 'ARCHIMEDEA' || activeTab === 'TEMPORAL' ? deepArchimedea?.personalModifiers : undefined}
+        reset={activeTab === 'SORTIE' ? getTimeLeft(sortie?.eta, sortie?.expiry) : activeTab === 'ARCHON' ? getTimeLeft(archonHunt?.eta, archonHunt?.expiry) : getTimeLeft(deepArchimedea?.eta, deepArchimedea?.expiry)} />
 
       {/* Soft Fading Divider Line (Bottom) */}
       <div className="relative z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-zinc-600/50 to-transparent mt-1 mb-1" />

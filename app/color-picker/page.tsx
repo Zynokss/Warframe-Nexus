@@ -110,7 +110,7 @@ export default function ColorPickerPage() {
   processedPalettes.sort((a, b) => b.peakSimilarity - a.peakSimilarity)
 
   return (
-    <div className="min-h-screen bg-[#18191c] text-zinc-100 font-sans">
+    <div className="nexus-page nexus-utility min-h-screen bg-[#18191c] text-zinc-100 font-sans">
       <Navbar />
 
       <main className="max-w-[1400px] mx-auto p-4 md:p-6 space-y-6">

@@ -11,10 +11,11 @@ export async function GET() {
     const res = await fetch(`https://api.warframestat.us/pc?language=en&_t=${timestamp}`, {
       headers: { 'Cache-Control': 'no-cache, no-store' },
       cache: 'no-store',
+      signal: AbortSignal.timeout(12000),
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch WorldState: ${res.statusText}`)
+      throw new Error(`WarframeStat world-state feed is unavailable (HTTP ${res.status})`)
     }
 
     const data = await res.json()
@@ -27,6 +28,7 @@ export async function GET() {
       const browseRes = await fetch(`https://browse.wf/live?_t=${timestamp}`, {
         headers: { 'Cache-Control': 'no-cache, no-store' },
         cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
       })
       if (browseRes.ok) {
         const browseData = await browseRes.json()
@@ -35,7 +37,7 @@ export async function GET() {
           liveIncursions = spBlock
         }
       }
-    } catch (err) {
+    } catch {
       console.warn('browse.wf fetch fallback engaged')
     }
 
@@ -77,10 +79,13 @@ export async function GET() {
         'Cache-Control': 'no-store, max-age=0',
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error
+      ? error.name === 'TimeoutError' ? 'WarframeStat took too long to respond. Please try again.' : error.message
+      : 'Internal Server Error'
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
-      { status: 500 }
+      { error: message },
+      { status: 502, headers: { 'Cache-Control': 'no-store, max-age=0' } }
     )
   }
 }

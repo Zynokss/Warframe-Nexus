@@ -11,7 +11,7 @@ interface WarframeCardProps {
 
 export default function WarframeCard({ title, timer, icon, children }: WarframeCardProps) {
   return (
-    <div className="bg-[#090a0d]/90 border border-zinc-800/80 rounded-xl p-4 space-y-3 font-mono shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300 backdrop-blur-md">
+    <div className="nexus-panel bg-[#090a0d]/90 border border-zinc-800/80 rounded-xl p-4 space-y-3 font-mono shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300 backdrop-blur-md">
       {/* Subtle Top Gold Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 

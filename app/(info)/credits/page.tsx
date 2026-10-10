@@ -1,0 +1,9 @@
+import type { Metadata } from 'next'
+import InfoPage from '@/components/InfoPage'
+export const metadata: Metadata = { title: 'Sources & credits — Warframe Nexus' }
+export default function CreditsPage(){return <InfoPage title="Sources & credits" intro="Nexus stands on the work of game creators and community developers.">
+<section><h2>Warframe</h2><p>Game names, characters, designs, and game assets belong to Digital Extremes Ltd. and their respective owners. Nexus is an independent fan project.</p><a href="https://www.warframe.com" target="_blank" rel="noopener noreferrer">Official Warframe website ↗</a></section>
+<section><h2>Community information</h2><ul><li><a href="https://warframestat.us" target="_blank" rel="noopener noreferrer">WarframeStat / WFCD</a> — world state, items, and aggregated Riven trade data.</li><li><a href="https://github.com/WFCD/warframe-items" target="_blank" rel="noopener noreferrer">WFCD warframe-items</a> — community item dataset.</li><li><a href="https://github.com/WFCD/warframe-assets" target="_blank" rel="noopener noreferrer">WFCD warframe-assets</a> — faction assets used by some views.</li><li><a href="https://browse.wf" target="_blank" rel="noopener noreferrer">browse.wf</a> — auxiliary incursion data when available.</li></ul><p>Community project licenses do not transfer rights in Digital Extremes’ game artwork.</p></section>
+<section><h2>Site visuals</h2><p>The Orokin hero and observatory illustrations were generated for this project as Warframe-inspired fan artwork. Nexus interface sigils and schematics are custom vector illustrations. They are decorative interpretations, not official game diagrams.</p></section>
+<section><h2>Typography and interface</h2><p>Rajdhani and JetBrains Mono support the Orokin typography. Lucide supplies interface icons. The site uses Next.js, React, Tailwind CSS and TanStack Query. Their materials remain subject to their respective licenses.</p></section>
+</InfoPage>}

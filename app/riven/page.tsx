@@ -29,7 +29,7 @@ export default function RivenPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#07070a] text-zinc-100 font-mono">
+    <div className="nexus-page nexus-utility min-h-screen bg-[#07070a] text-zinc-100 font-mono">
       <Navbar />
 
       <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">

@@ -1,0 +1,5 @@
+import type { Metadata } from 'next'
+import InfoPage from '@/components/InfoPage'
+import { site } from '@/lib/site'
+export const metadata: Metadata = { title: 'Contact — Warframe Nexus' }
+export default function ContactPage(){return <InfoPage title="Contact Nexus" intro="Feedback, privacy requests, and questions about rights or attribution."><section><h2>Contact the operator</h2>{site.contactEmail ? <p><a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></p> : <p>A public contact address has not been configured yet. A contact channel must be published before this site enables advertising or accepts support payments.</p>}<p>For an issue report, include the page address, what happened, and the browser you used. Do not send your Warframe password, payment-card details, or other sensitive information.</p></section><section><h2>Game support</h2><p>Nexus cannot access or recover Warframe accounts. For game-account or purchase issues, contact <a href="https://support.warframe.com" target="_blank" rel="noopener noreferrer">official Warframe support</a>.</p></section></InfoPage>}

@@ -36,6 +36,7 @@ export interface DuviriCycle {
   id: string
   expiry: string
   activation: string
+  choices?: { category: string; choices: string[] }[]
   state: 'sorrow' | 'fear' | 'joy' | 'anger' | 'envy'
   timeLeft: string
 }
@@ -118,6 +119,31 @@ export interface ArchonHunt {
     typeKey: string
   }[]
   eta: string
+}
+
+export interface ArchimedeaModifier {
+  name: string
+  description: string
+  isHard?: boolean
+}
+
+export interface ArchimedeaMission {
+  missionType: string
+  faction?: string
+  node?: string
+  deviation?: ArchimedeaModifier
+  risks: ArchimedeaModifier[]
+  modifiers?: ArchimedeaModifier[]
+}
+
+export interface Archimedea {
+  id?: string
+  type: 'Deep Archimedea' | 'Temporal Archimedea'
+  activation?: string
+  expiry?: string
+  eta?: string
+  missions: ArchimedeaMission[]
+  personalModifiers: ArchimedeaModifier[]
 }
 
 export interface DeepArchimedea {
@@ -275,6 +301,7 @@ export interface WorldState {
   invasions: Invasion[]
   sortie: Sortie
   archonHunt: ArchonHunt
+  archimedeas?: unknown[]
   deepArchimedea?: DeepArchimedea
   syndicateMissions: SyndicateMission[]
   voidTrader?: VoidTrader
